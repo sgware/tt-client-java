@@ -1,0 +1,198 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <!-- Project Meta-Data -->
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>edu.uky.cs.nil.tt</groupId>
+  <artifactId>tt-client-java</artifactId>
+  <version>0.10.0</version>
+  <packaging>jar</packaging>
+  <name>Tandem Tales Client (Java)</name>
+  <description>Java library for Tandem Tales clients.</description>
+  <url>http://github.com/sgware/tt-client-java</url>
+  <!-- License -->
+  <licenses>
+    <license>
+      <name>GPL-3.0</name>
+      <url>http://opensource.org/license/gpl-3.0</url>
+    </license>
+  </licenses>
+  <!-- Developers -->
+  <developers>
+    <developer>
+      <name>Stephen G. Ware</name>
+      <email>sgware@cs.uky.edu</email>
+    </developer>
+  </developers>
+  <!-- Source Control -->
+  <scm>
+    <connection>scm:git:git://github.com/sgware/tt-client-java.git</connection>
+    <developerConnection>scm:git:ssh://github.com:sgware/tt-client-java.git</developerConnection>
+    <url>http://github.com/sgware/tt-client-java/tree/main</url>
+  </scm>
+  <!-- Properties -->
+  <properties>
+    <!-- UTF-8 Encoding -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- Use Java 21 -->
+    <java.version>21</java.version>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.release>21</maven.compiler.release>
+  </properties>
+  <!-- Dependencies -->
+  <dependencies>
+    <!-- Tandem Tales Server -->
+    <dependency>
+      <groupId>edu.uky.cs.nil.tt</groupId>
+      <artifactId>tt-server</artifactId>
+      <version>0.10.0</version>
+    </dependency>
+  </dependencies>
+  <!-- Build -->
+  <build>
+    <!-- Plugins -->
+    <plugins>
+      <!-- Delete `docs` and `build` directories during clean phase. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.5.0</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${basedir}/docs</directory>
+            </fileset>
+            <fileset>
+              <directory>${basedir}/build</directory>
+            </fileset>
+          </filesets>
+          <force>true</force>
+        </configuration>
+      </plugin>
+      <!-- Generate Javadoc. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.12.0</version>
+        <executions>
+          <execution>
+            <id>javadoc</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Create a JAR for source files. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>3.4.0</version>
+        <executions>
+          <execution>
+            <id>attach-source</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Create a JAR file the includes both the compiled code and source. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.8.0</version>
+        <configuration>
+          <descriptors>
+            <descriptor>src/assembly/jar-all.xml</descriptor>
+          </descriptors>
+        </configuration>
+        <executions>
+          <execution>
+            <id>jar-all</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Copy Javadoc into `docs` directory for GitHub Pages. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.6</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/docs</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>target/reports/apidocs</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Copy the JAR file with source into the `build/jar` directory. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.9.0</version>
+        <executions>
+          <execution>
+            <id>copy-packaged</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>${project.artifactId}</artifactId>
+                  <version>${project.version}</version>
+                  <classifier>all</classifier>
+                  <type>${project.packaging}</type>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${basedir}/build/jar</outputDirectory>
+              <stripVersion>true</stripVersion>
+              <stripClassifier>true</stripClassifier>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Generate file checksums -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>3.2.8</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>deploy</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Publish to the Maven Central Repository -->
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.10.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
