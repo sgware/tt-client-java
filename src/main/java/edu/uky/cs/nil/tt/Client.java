@@ -70,14 +70,14 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	 */
 	public static final int DEFAULT_PORT = Settings.DEFAULT_PORT;
 	
-	/** The client's API key */
-	private final String key;
-	
 	/** The URL where the client will attempt to connect */
 	private final String url;
 	
 	/** The network port the client will attempt to connect on */
 	private final int port;
+	
+	/** The external API used for text embedding and completion */
+	protected final ExternalAPI external;
 	
 	/**
 	 * The client's join request, containing their name, password, and other
@@ -136,7 +136,7 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	public Client(String name, String password, String world, Role role, String partner, String key, String url, int port) {
 		Utilities.requireNonNull(name, "name");
 		this.join = new Join(name, password, world, role, partner);
-		this.key = key;
+		this.external = new ExternalAPI(key);
 		Utilities.requireNonNull(url, "server URL");
 		this.url = url;
 		this.port = port;
@@ -493,7 +493,7 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 		// Warn if password or API key are missing.
 		if(join.password == null && System.getenv(ENVIRONMENT_VARIABLE_PASSWORD) == null)
 			onWarning("The environment variable \"" + ENVIRONMENT_VARIABLE_PASSWORD + "\" is not set. This agent will not use a password.");
-		if(key == null && System.getenv(ENVIRONMENT_VARIABLE_API_KEY) == null)
+		if(!external.hasKey() && System.getenv(ENVIRONMENT_VARIABLE_API_KEY) == null)
 			onWarning("The environment variable \"" + ENVIRONMENT_VARIABLE_API_KEY + "\" is not set. This agent will not be able to use the external API.");
 		// Connect the socket input and output.
 		socket = connect(url, port);
@@ -860,60 +860,5 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 			throw new RuntimeException(message);
 		else
 			System.err.println("Error: " + message);
-	}
-	
-	/**
-	 * Makes an external call to a large language model API to complete a text
-	 * prompt.
-	 * <p>
-	 * This method requires the agent to have an {@link
-	 * #ENVIRONMENT_VARIABLE_API_KEY API key}; without one, this method will
-	 * throw an exception.
-	 * 
-	 * @param system the system prompt which instructs the language model how
-	 * to respond to the prompt
-	 * @param prompt the prompt which the large language model will respond to
-	 * @param temperature a parameter influencing the predictability of the
-	 * language model's output, where 0 means completely predictable and
-	 * higher values mean less predictable (more "creative") output
-	 * @return the response from the large language model to the prompt
-	 * @throws IllegalStateException if the client does not have an API key
-	 */
-	protected String complete(String system, String prompt, float temperature) {
-		getKey();
-		// TODO
-		return null;
-	}
-	
-	/**
-	 * Makes an external call to a large language model API to embed a text
-	 * string in the model's latent space.
-	 * <p>
-	 * This method requires the agent to have an {@link
-	 * #ENVIRONMENT_VARIABLE_API_KEY API key}; without one, this method will
-	 * throw an exception.
-	 * 
-	 * @param string the string to embed
-	 * @return a vector representing the string's embedding
-	 * @throws IllegalStateException if the client does not have an API key
-	 */
-	protected float[] embed(String string) {
-		getKey();
-		// TODO
-		return null;
-	}
-	
-	/**
-	 * Returns this client's {@link #key API key} or throws an exception if it
-	 * does not have one.
-	 * 
-	 * @return the client's API key
-	 * @throws IllegalStateException if the client does not have an API key
-	 */
-	private final String getKey() {
-		if(key == null)
-			throw new IllegalStateException("The client does not have an API key, so it cannot use the external API.");
-		else
-			return key;
 	}
 }
