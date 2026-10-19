@@ -1,5 +1,15 @@
 package edu.uky.cs.nil.tt;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import com.google.gson.Gson;
+
 /**
  * The external API is how a {@link Client client} contacts remote services to
  * perform computations the client cannot perform on its own.
@@ -80,8 +90,82 @@ public class ExternalAPI {
 	/** The random seed passed to the text completion model */
 	private static final int COMPLETE_SEED = 0;
 	
+	/** The object returned by the external API after a text embedding query. */
+	private static final class EmbedResponse {
+		
+		/** String embeddings */
+		public EmbedResponseData[] data;
+		
+		/** Resource usages */
+		public EmbedResponseUsage usage;
+	}
+	
+	/**
+	 * The data objects returned by the external API after a text embedding
+	 * query.
+	 */
+	private static final class EmbedResponseData {
+		
+		/** An array of floats representing an embedding vector */
+		public float[] embedding;
+	}
+	
+	/**
+	 * An object returned by the external API documenting the resources used by
+	 * a text embedding query.
+	 */
+	private static final class EmbedResponseUsage {
+		
+		/** The number of input tokens required for the embedded text */
+		public int total_tokens;
+	}
+	
+	/**
+	 * An entry in a conversation to be sent to the external text completion
+	 * API.
+	 */
+	private static final record Message(String role, String content) {}
+	
+	/**
+	 * The object returned by the external API after a text completion query.
+	 */
+	private static final class CompleteResponse {
+		
+		/** The text completion */
+		public CompleteChoice[] choices;
+		
+		/** Resource usages */
+		public CompleteUsage usage;
+	}
+	
+	/**
+	 * Represents on of the possible text completions returned by the external
+	 * API after a text completion query.
+	 */
+	private static final class CompleteChoice {
+		
+		/** The next message generated in the conversation */
+		public Message message;
+	}
+	
+	/**
+	 * An object returned by the external API documenting the resources used by
+	 * a text completion query.
+	 */
+	private static final class CompleteUsage {
+		
+		/** The number of input token used */
+		public int prompt_tokens;
+		
+		/** The number of output tokens used */
+		public int completion_tokens;
+	}
+	
 	/** The key used by the client to authenticate with the external service. */
 	private final String key;
+	
+	/** Used to build the API requests */
+	private final Gson gson;
 	
 	/** Number of tokens used this session for text embedding */
 	private int embedTokensUsed = 0;
@@ -133,6 +217,7 @@ public class ExternalAPI {
 	 */
 	public ExternalAPI(String key) {
 		this.key = key;
+		this.gson = new Gson();
 	}
 	
 	/**
@@ -217,16 +302,51 @@ public class ExternalAPI {
 	 * @param string the string to convert to a vector
 	 * @return an array of floating point values corresponding to that string's
 	 * position in the embedding's latent space
+	 * @throws IllegalStateException if the client does not have an API key
 	 * @throws RuntimeException if this client has exceeded the number of tokens
 	 * that can be used for text embedding
+	 * @throws NullPointerException if the input string is null
+	 * @throws IOException if an error occurs while calling the external API
 	 * @see #getEmbedTokensUsed()
 	 * @see #getEmbedTokensRemaining()
 	 * @see #getEmbedDimensions()
 	 */
-	public float[] embed(String string) {
+	public float[] embed(String string) throws IOException {
+		// Check resources.
 		checkKey();
-		// TODO Will this throw other exceptions?
-		throw new UnsupportedOperationException("External API not yet implemented.");
+		if(embedTokensUsed >= EMBED_TOKENS_LIMIT)
+			throw new RuntimeException("The embedding token limit of " + EMBED_TOKENS_LIMIT + " has been exceeded.");
+		Utilities.requireNonNull(string, "string");
+		// Create API request payload.
+		if(string == null)
+			string = "";
+		Map<String, Object> payload = new LinkedHashMap<>();
+		payload.put("model", EMBED_MODEL);
+		payload.put("input", string);
+		Integer dimensions = getEmbedDimensions();
+		if(dimensions != null)
+			payload.put("dimensions", dimensions);
+		// Send the request.
+		HttpClient client = HttpClient.newHttpClient();
+		HttpRequest request = HttpRequest.newBuilder()
+			.uri(URI.create(EMBED_URL))
+			.header("Content-Type", "application/json")
+			.header("Authorization", "Bearer " + key)
+			.POST(HttpRequest.BodyPublishers.ofString(gson.toJson(payload)))
+			.build();
+		HttpResponse<String> result;
+		try {
+			result = client.send(request, HttpResponse.BodyHandlers.ofString());
+		}
+		catch(InterruptedException exception) {
+			throw new IOException("External API request was interrupted before it returned a value.", exception);
+		}
+		// Parse the response.
+		if(result.statusCode() != 200)
+			throw new IOException("The call to the external text embedding API failed (response code " + result.statusCode() + ").");
+		EmbedResponse response = gson.fromJson(result.body(), EmbedResponse.class);
+		embedTokensUsed += response.usage.total_tokens;
+		return response.data[0].embedding;
 	}
 	
 	/**
@@ -556,30 +676,115 @@ public class ExternalAPI {
 	 * 
 	 * @param conversation a series of messages
 	 * @return text that is a fitting continuation of the input messages
+	 * @throws IllegalStateException if the client does not have an API key
 	 * @throws RuntimeException if this client has exceeded the number of input
 	 * or output tokens that can be used for text completion
+	 * @throws NullPointerException if the input conversation or any or its
+	 * elements are null
+	 * @throws IllegalArgumentException if the conversation has more than one
+	 * message but an odd number of messages
+	 * @throws IOException if an error occurs while calling the external API
 	 * @see #getCompleteInTokensUsed()
 	 * @see #getCompleteInTokensRemaining()
 	 * @see #getCompleteOutTokensUsed()
 	 * @see #getCompleteOutTokensRemaining()
 	 * @see #setCompleteMaxOutTokens(Integer)
-	 * @see #setCompleteTemperature(Float)
 	 * @see #setCompleteReasoningEffort(ReasoningEffort)
+	 * @see #setCompleteTemperature(Float)
 	 * @see #setCompleteTopK(Integer)
 	 * @see #setCompleteTopP(Float)
 	 * @see #setCompleteMinP(Float)
 	 */
-	public String complete(String...conversation) {
+	public String complete(String...conversation) throws IOException {
+		// Check resources.
 		checkKey();
-		// TODO Are other exceptions thrown?
-		throw new UnsupportedOperationException("External API not yet implemented.");
+		if(completeInTokensUsed >= COMPLETE_IN_TOKENS_LIMIT)
+			throw new RuntimeException("The completion input token limit of " + COMPLETE_IN_TOKENS_LIMIT + " has been exceeded.");
+		if(completeOutTokensUsed >= COMPLETE_OUT_TOKENS_LIMIT)
+			throw new RuntimeException("The completion output token limit of " + COMPLETE_OUT_TOKENS_LIMIT + " has been exceeded.");
+		// Construct the conversation.
+		Utilities.requireNonNull(conversation, "conversation");
+		Utilities.requireAllNonNull(conversation, "conversation message");
+		Message[] messages;
+		if(conversation.length == 1)
+			messages = new Message[] { new Message("user", conversation[0]) };
+		else if(conversation.length % 2 == 0) {
+			messages = new Message[conversation.length];
+			messages[0] = new Message("system", conversation[0]);
+			for(int i = 1; i < messages.length; i++) {
+				if(i % 2 == 1)
+					messages[i] = new Message("user", conversation[i]);
+				else
+					messages[i] = new Message("assistant", conversation[i]);
+			}
+		}
+		else
+			throw new IllegalArgumentException("A completion conversation must have 1 message or an even number of messages.");
+		// Create API request payload.
+		Map<String, Object> payload = new LinkedHashMap<>();
+		payload.put("model", COMPLETE_MODEL);
+		payload.put("messages", messages);
+		Integer maxTokens = getCompleteMaxOutTokens();
+		if(maxTokens != null)
+			payload.put("max_tokens", maxTokens);
+		ReasoningEffort reasoningEffort = getCompleteReasoningEffort();
+		if(reasoningEffort != null)
+			payload.put("reasoning_effort", reasoningEffort);
+		payload.put("seed", COMPLETE_SEED);
+		Float temperature = getCompleteTemperature();
+		if(temperature != null)
+			payload.put("temperature", temperature);
+		Integer topK = getCompleteTopK();
+		if(topK != null)
+			payload.put("top_k", topK);
+		Float topP = getCompleteTopP();
+		if(topP != null)
+			payload.put("top_p", topP);
+		Float minP = getCompleteMinP();
+		if(minP != null)
+			payload.put("min_p", minP);
+		// Send the request.
+		HttpClient client = HttpClient.newHttpClient();
+		HttpRequest request = HttpRequest.newBuilder()
+			.uri(URI.create(COMPLETE_URL))
+			.header("Content-Type", "application/json")
+			.header("Authorization", "Bearer " + key)
+			.POST(HttpRequest.BodyPublishers.ofString(gson.toJson(payload)))
+			.build();
+		HttpResponse<String> result;
+		try {
+			result = client.send(request, HttpResponse.BodyHandlers.ofString());
+		}
+		catch(InterruptedException exception) {
+			throw new IOException("External API request was interrupted before it returned a value.", exception);
+		}
+		// Parse the response.
+		if(result.statusCode() != 200)
+			throw new IOException("The call to the external text completion API failed (response code " + result.statusCode() + ").");
+		CompleteResponse response = gson.fromJson(result.body(), CompleteResponse.class);
+		completeInTokensUsed += response.usage.prompt_tokens;
+		completeOutTokensUsed += response.usage.completion_tokens;
+		return response.choices[0].message.content;
 	}
 	
+	/**
+	 * Throws an exception if the client does not have an API key.
+	 * 
+	 * @throws IllegalStateException if the client does not have an API key
+	 */
 	private final void checkKey() {
 		if(key == null)
 			throw new IllegalStateException("This agent does not have an API key. It cannot use the external API.");
 	}
 	
+	/**
+	 * Throws an exception if an integer is not within a given range.
+	 * 
+	 * @param type a description of the number's meaning
+	 * @param value the integer to check
+	 * @param min the lowest allowed value
+	 * @param max the highest allowed value
+	 */
 	private final void checkInteger(String type, int value, int min, int max) {
 		if(value < min)
 			throw new IllegalArgumentException(type + " must be >= " + min + ".");
@@ -587,6 +792,14 @@ public class ExternalAPI {
 			throw new IllegalArgumentException(type + " must be <= " + max + ".");
 	}
 	
+	/**
+	 * Throws an exception if a float is not within a given range.
+	 * 
+	 * @param type a description of the number's meaning
+	 * @param value the float to check
+	 * @param min the lowest allowed value
+	 * @param max the highest allowed value
+	 */
 	private final void checkFloat(String type, float value, float min, float max) {
 		if(value < min)
 			throw new IllegalArgumentException(type + " must be >= " + min + ".");
