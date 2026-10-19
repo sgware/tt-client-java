@@ -22,7 +22,7 @@ You can add this library to a [Maven](https://maven.apache.org) project's
     <dependency>
       <groupId>edu.uky.cs.nil.tt</groupId>
       <artifactId>tt-client-java</artifactId>
-      <version>0.10.0</version> <!-- use most recent version -->
+      <version>0.11.0</version> <!-- use most recent version -->
     </dependency>
   </dependencies>
   ...
@@ -72,4 +72,5 @@ Technology Commercialization at <otcinfo@uky.edu>.
 
 ## Version History
 
+- Version 0.11.0: Implemented external API for text embedding and completion.
 - Version 0.10.0: First public release.
