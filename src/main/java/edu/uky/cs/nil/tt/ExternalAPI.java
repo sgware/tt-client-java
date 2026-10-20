@@ -39,19 +39,13 @@ public class ExternalAPI {
 	public enum ReasoningEffort {
 		
 		/** Highest level of reasoning effort */
-		XHIGH,
+		MAX,
 		
 		/** High reasoning effort */
 		HIGH,
 		
-		/** Middle reasoning effort */
-		MEDIUM,
-		
-		/** Low level of reasoning effort */
-		LOW,
-		
 		/** Lowest level of reasoning effort */
-		MINIMAL,
+		LOW,
 		
 		/** Do not perform reasoning */
 		NONE
@@ -189,10 +183,10 @@ public class ExternalAPI {
 	 * Level of reasoning effort for text completion, or null if this setting
 	 * is not used
 	 */
-	private ReasoningEffort completeReasoningEffort = null;
+	private ReasoningEffort completeReasoningEffort = ReasoningEffort.LOW;
 	
 	/** Temperature for text completion, or null if this setting is not used */
-	private Float completeTemperature = null;
+	private Float completeTemperature = 0f;
 	
 	/**
 	 * Top k setting for text completion, or null if this setting is not used
@@ -322,7 +316,9 @@ public class ExternalAPI {
 			string = "";
 		Map<String, Object> payload = new LinkedHashMap<>();
 		payload.put("model", EMBED_MODEL);
+		payload.put("input_type", "string");
 		payload.put("input", string);
+		payload.put("encoding_format", "float");
 		Integer dimensions = getEmbedDimensions();
 		if(dimensions != null)
 			payload.put("dimensions", dimensions);
@@ -726,7 +722,7 @@ public class ExternalAPI {
 		payload.put("messages", messages);
 		Integer maxTokens = getCompleteMaxOutTokens();
 		if(maxTokens != null)
-			payload.put("max_tokens", maxTokens);
+			payload.put("max_completion_tokens", maxTokens);
 		ReasoningEffort reasoningEffort = getCompleteReasoningEffort();
 		if(reasoningEffort != null)
 			payload.put("reasoning_effort", reasoningEffort);
