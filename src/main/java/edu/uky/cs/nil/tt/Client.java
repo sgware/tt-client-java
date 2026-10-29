@@ -350,7 +350,7 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	 * @throws IllegalStateException if the client's session has not yet started
 	 */
 	public World getWorld() {
-		return failItNotStarted(world, "world");
+		return failIfNotStarted(world, "world");
 	}
 	
 	/**
@@ -364,7 +364,7 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	 * @throws IllegalStateException if the client's session has not yet started
 	 */
 	public List<Turn> getHistory() {
-		return failItNotStarted(status, "history").getHistory();
+		return failIfNotStarted(status, "history").getHistory();
 	}
 	
 	/**
@@ -374,7 +374,7 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	 * @throws IllegalStateException if the client's session has not yet started
 	 */
 	public State getState() {
-		return failItNotStarted(status, "state").getState();
+		return failIfNotStarted(status, "state").getState();
 	}
 	
 	/**
@@ -386,7 +386,7 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	 * @throws IllegalStateException if the client's session has not yet started
 	 */
 	public List<Turn> getChoices() {
-		return failItNotStarted(choices, "list of choices");
+		return failIfNotStarted(choices, "list of choices");
 	}
 	
 	/**
@@ -411,7 +411,7 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	 * @return the object
 	 * @throws IllegalStateException if the object is null
 	 */
-	private static final <T> T failItNotStarted(T object, String description) {
+	private static final <T> T failIfNotStarted(T object, String description) {
 		if(object == null)
 			throw new IllegalStateException("The " + description + " is not available because the client's session has not started yet.");
 		else
