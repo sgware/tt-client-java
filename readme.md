@@ -1,6 +1,6 @@
 # Tandem Tales Client (Java)
 
-This Java libray provides the abstract `edu.uky.cs.nil.tt.Client` and
+This Java library provides the abstract `edu.uky.cs.nil.tt.Client` and
 `edu.uky.cs.nil.tt.ClientFactory` classes that can be extended to create
 [Tandem Tales](https://sgware.github.io/tt) agents. See
 [this example Java agent](https://github.com/sgware/tt-random-agent-java)
@@ -40,7 +40,7 @@ It has one dependency:
 Assuming you have [Git](https://git-scm.com/install), the
 [Java Development Kit](https://www.oracle.com/java/technologies/downloads), and
 [Maven](https://maven.apache.org) installed and on your path, you can download
-the dependencies and compile Tandem Tales Server from source like this.
+the dependencies and compile the Tandem Tales Client library from source like this.
 ```
 git clone https://github.com/sgware/tt-client-java.git
 cd tt-client-java
@@ -54,7 +54,7 @@ description, example, and API reference.
 
 ## License
 
-Tandem Tales and its associated libraries was developed by Stephen G. Ware PhD,
+Tandem Tales and its associated libraries were developed by Stephen G. Ware PhD,
 Associate Professor of Computer Science at the University of Kentucky.
 Development was sponsored in part by a grant from the US National Science
 Foundation, #2145153.
