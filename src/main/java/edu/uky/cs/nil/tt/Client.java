@@ -308,7 +308,7 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	 * Returns the name of the partner this client wants to play with. A null
 	 * value means this client is willing to play with any partner. This value
 	 * does not change when the session starts. In other words, if the client
-	 * did not request a specific partner, they client has no way to know the
+	 * did not request a specific partner, the client has no way to know the
 	 * name of the partner they were assigned.
 	 * 
 	 * @return the name of the partner this client wants to play with
@@ -379,7 +379,7 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	
 	/**
 	 * If it is currently this client's turn to act, this method returns the
-	 * list of {@link Turn turns} they can take next. If it is not thie client's
+	 * list of {@link Turn turns} they can take next. If it is not this client's
 	 * turn, the list will be empty.
 	 * 
 	 * @return the list of turns the client can take next
@@ -440,12 +440,12 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	 * <li>After the client receives the {@link Start start} message and the
 	 * first {@link Update update} message, the session begins and the {@link
 	 * #onStart(World, Role, State)} method is called. Immediately before that
-	 * method is called, method like {@link #getWorld()} will be able to return
+	 * method is called, methods like {@link #getWorld()} will be able to return
 	 * their values.</li>
 	 * <li>Each time the client receives an {@link Update update} message, the
 	 * {@link #onUpdate(Status)} method is called to notify the client about
 	 * changes to the session history and world state. This method is called
-	 * whether or not the client need to make a choice.</li>
+	 * whether or not the client needs to make a choice.</li>
 	 * <li>Each time the client receives an {@link Update update} message and it
 	 * is the client's turn to act, after calling {@link #onUpdate(Status)} the
 	 * {@link #onChoice(Status)} method will be called to solicit which turn the
@@ -508,8 +508,8 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 			if(connect != null) {
 				// Warn if the server's version number does not match.
 				if(!connect.version.equals(Settings.VERSION))
-					onWarning("This client is using version " + Settings.VERSION + " of the communication protocol, but the server is using version " + connect.version + ". This may cause misconnunications.");
-				// Notify the client is has connected.
+					onWarning("This client is using version " + Settings.VERSION + " of the communication protocol, but the server is using version " + connect.version + ". This may cause miscommunications.");
+				// Notify the client it has connected.
 				onConnect(connect);
 				// Send the join message.
 				joined = true;
@@ -768,7 +768,7 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	/**
 	 * This method is called once if the story reaches one of its {@link
 	 * World#getEndings() pre-defined endings}. If the session never starts or
-	 * of the story does not reach an ending, this method will not be called.
+	 * if the story does not reach an ending, this method will not be called.
 	 * <p>
 	 * By default, this method does nothing. It can be overridden if the client
 	 * wants to react to the end of the story.
