@@ -10,7 +10,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /**
- * A client factory creates continuously creates {@link Client clients} to
+ * A client factory continuously creates {@link Client clients} to
  * connect to a {@link Server server} and is useful for deploying automated
  * agents.
  * <p>
@@ -92,7 +92,7 @@ public abstract class ClientFactory implements Callable<Void>, AutoCloseable {
 	/** Whether {@link #close()} has been called */
 	private boolean closed = false;
 	
-	/** Used to await the full shutdown of the server */
+	/** Used to await the full shutdown of the factory */
 	private final CountDownLatch latch = new CountDownLatch(1);
 	
 	/**
@@ -104,7 +104,7 @@ public abstract class ClientFactory implements Callable<Void>, AutoCloseable {
 	 */
 	public ClientFactory(int maxClients) {
 		this.maxClients = maxClients;
-		// If the JVM shuts down, close the server and wait for it to shut down.
+		// If the JVM shuts down, close the factory and wait for it to shut down.
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			close();
 			try {
@@ -137,7 +137,7 @@ public abstract class ClientFactory implements Callable<Void>, AutoCloseable {
 	 * <p>
 	 * This method starts the client factory, creates the first client,
 	 * periodically creates new clients as needed, and shuts down gracefully
-	 * if the factory is closed or if a client throw an uncaught exception.
+	 * if the factory is closed or if a client throws an uncaught exception.
 	 * <p>
 	 * As this method runs, it calls other methods to notify the factory of
 	 * important events. Some of these methods are guaranteed to be called even
@@ -186,7 +186,7 @@ public abstract class ClientFactory implements Callable<Void>, AutoCloseable {
 			// Run operations until closed.
 			while(!closed)
 				queue.take().call();
-			// Notify factory that is has closed.
+			// Notify factory that it has closed.
 			try {
 				onClose();
 			}
@@ -281,7 +281,7 @@ public abstract class ClientFactory implements Callable<Void>, AutoCloseable {
 	 * and has begun shutting down. This method is called either because this
 	 * factory was {@link #close() closed} or because a client threw an
 	 * exception. This method will always be called from the thread which called
-	 * {@link #call()}. This method will not be called if the client shuts down
+	 * {@link #call()}. This method will not be called if the factory shuts down
 	 * because the {@link #call()} method was interrupted.
 	 * <p>
 	 * By default, this method does nothing. It can be overridden if the factory
