@@ -133,7 +133,7 @@ public class ExternalAPI {
 	}
 	
 	/**
-	 * Represents on of the possible text completions returned by the external
+	 * Represents one of the possible text completions returned by the external
 	 * API after a text completion query.
 	 */
 	private static final class CompleteChoice {
@@ -148,7 +148,7 @@ public class ExternalAPI {
 	 */
 	private static final class CompleteUsage {
 		
-		/** The number of input token used */
+		/** The number of input tokens used */
 		public int prompt_tokens;
 		
 		/** The number of output tokens used */
@@ -238,7 +238,7 @@ public class ExternalAPI {
 	
 	/**
 	 * Returns the number of tokens that can be used for {@link #embed(String)
-	 * text embedding} before {@link EMBED_TOKENS_LIMIT the limit} is exceeded.
+	 * text embedding} before {@link #EMBED_TOKENS_LIMIT the limit} is exceeded.
 	 * 
 	 * @return the number of tokens that can be used for text embedding
 	 * @see #getEmbedTokensUsed()
@@ -404,7 +404,7 @@ public class ExternalAPI {
 	 * <p>
 	 * Reasoning models generate output tokens during the reasoning phase and
 	 * before generating the text they will return. This limit covers both
-	 * the tokens generating during reasoning and the actual output tokens.
+	 * the tokens generated during reasoning and the actual output tokens.
 	 * {@link #complete(String...)} may return an empty output if it uses all
 	 * tokens during the reasoning phase.
 	 * 
@@ -508,7 +508,7 @@ public class ExternalAPI {
 	
 	/**
 	 * Returns the top k setting used during {@link #complete(String...) text
-	 * completion}. A null values means this setting is not used and the
+	 * completion}. A null value means this setting is not used and the
 	 * external API should decide how to choose its next tokens.
 	 * 
 	 * @return the top k setting used during text completion, or null if this
@@ -522,7 +522,7 @@ public class ExternalAPI {
 	
 	/**
 	 * Sets the top k setting used during {@link #complete(String...) text
-	 * completion}. A null values means this setting should not used and the
+	 * completion}. A null value means this setting should not be used and the
 	 * external API should decide how to choose its next tokens.
 	 * <p>
 	 * When choosing its next output token during text generation, this setting
@@ -545,7 +545,7 @@ public class ExternalAPI {
 	
 	/**
 	 * Returns the top p setting used during {@link #complete(String...) text
-	 * completion}. A null values means this setting is not used and the
+	 * completion}. A null value means this setting is not used and the
 	 * external API should decide how to choose its next tokens.
 	 * 
 	 * @return the top p setting used during text completion, or null if this
@@ -559,7 +559,7 @@ public class ExternalAPI {
 	
 	/**
 	 * Sets the top p setting used during {@link #complete(String...) text
-	 * completion}. A null values means this setting should not used and the
+	 * completion}. A null value means this setting should not be used and the
 	 * external API should decide how to choose its next tokens.
 	 * <p>
 	 * When choosing its next output token during text generation, this setting
@@ -571,7 +571,7 @@ public class ExternalAPI {
 	 * 
 	 * @param value the new top p value to use during text completion, or null
 	 * if this setting should not be used
-	 * @throws IllegalArgumentException if the value is less 0 or more than 1
+	 * @throws IllegalArgumentException if the value is less than 0 or more than 1
 	 * @see #getCompleteTopP()
 	 * @see #complete(String...)
 	 */
@@ -583,7 +583,7 @@ public class ExternalAPI {
 	
 	/**
 	 * Returns the min p setting used during {@link #complete(String...) text
-	 * completion}. A null values means this setting is not used and the
+	 * completion}. A null value means this setting is not used and the
 	 * external API should decide how to choose its next tokens.
 	 * 
 	 * @return the min p setting used during text completion, or null if this
@@ -597,14 +597,14 @@ public class ExternalAPI {
 	
 	/**
 	 * Sets the min p setting used during {@link #complete(String...) text
-	 * completion}. A null values means this setting should not used and the
+	 * completion}. A null value means this setting should not be used and the
 	 * external API should decide how to choose its next tokens.
 	 * <p>
 	 * When choosing its next output token during text generation, this setting
 	 * forces the model to ignore tokens whose likelihood is below a threshold.
 	 * The threshold is the product of the likelihood of the best token and p.
 	 * For example, if p is set to 0.1, then the model may only consider tokens
-	 * whose likelihood is one tenth a likely as the best token. A low value
+	 * whose likelihood is one tenth as likely as the best token. A low value
 	 * means the model will have many tokens to choose from and will generate
 	 * less predictable text, whereas a higher value means the model will have
 	 * fewer tokens to choose from and will generate more predictable text. Not
@@ -624,10 +624,10 @@ public class ExternalAPI {
 	
 	/**
 	 * Queries the external text completion API to generate text which is a
-	 * fitting continuation of to a series of messages. If multiple messages are
+	 * fitting continuation of a series of messages. If multiple messages are
 	 * given as input, then message 0 is treated as the system prompt (the
 	 * instructions to the text completion agent), odd numbered messages (1, 3,
-	 * etc.) are treated as messages from the user, and event numbered messages
+	 * etc.) are treated as messages from the user, and even numbered messages
 	 * (2, 4, etc.) are treated as responses from the agent. If only a single
 	 * string is given as input it is treated as a message from the user and the
 	 * text completion model will use its default system prompt.
@@ -641,7 +641,7 @@ public class ExternalAPI {
 	 * <ul>
 	 * <li>Set the {@link #setCompleteReasoningEffort(ReasoningEffort) reasoning
 	 * effort} to control how much additional text the model generates to verify
-	 * and refined its output. Reasoning text is not returned as part of the
+	 * and refine its output. Reasoning text is not returned as part of the
 	 * response, but higher levels of reasoning should produce better responses.
 	 * </li>
 	 * <li>Set the {@link #setCompleteTemperature(Float) temperature} to control
@@ -650,10 +650,10 @@ public class ExternalAPI {
 	 * resulting in more predictable output. A higher temperature results in
 	 * less predictable responses.</li>
 	 * <li>Set {@link #setCompleteTopK(Integer) top k} to force the model to
-	 * choose only from the k more likely output tokens. A low value results in
+	 * choose only from the k most likely output tokens. A low value results in
 	 * more predictable text. A high value results in less predictable text.
 	 * </li>
-	 * <li>Set {@link #setCompleteTopP(Float) top p} to force the mode to choose
+	 * <li>Set {@link #setCompleteTopP(Float) top p} to force the model to choose
 	 * only from the most likely output tokens whose probabilities add up to p.
 	 * A low value results in more predictable text. A higher value results in
 	 * less predictable text.</li>
@@ -662,7 +662,7 @@ public class ExternalAPI {
 	 * token times p. A low value results in less predictable text. A higher
 	 * value results in more predictable text.</li>
 	 * </ul>
-	 * This API limits the total number of input and output tokens tokens that
+	 * This API limits the total number of input and output tokens that
 	 * can be used during a client's session to {@link
 	 * #COMPLETE_IN_TOKENS_LIMIT} and {@link #COMPLETE_OUT_TOKENS_LIMIT}
 	 * respectively. You can check the number of input and output tokens used
@@ -675,7 +675,7 @@ public class ExternalAPI {
 	 * @throws IllegalStateException if the client does not have an API key
 	 * @throws RuntimeException if this client has exceeded the number of input
 	 * or output tokens that can be used for text completion
-	 * @throws NullPointerException if the input conversation or any or its
+	 * @throws NullPointerException if the input conversation or any of its
 	 * elements are null
 	 * @throws IllegalArgumentException if the conversation has more than one
 	 * message but an odd number of messages
