@@ -85,7 +85,7 @@
  * <li>{@link ClientFactory#onStart() onStart()}, which runs after the factory
  * starts.</li>
  * <li>{@link ClientFactory#onClose() onClose()}, which runs after the factory
- * has been shut down.</li>
+ * begins shutting down.</li>
  * <li>{@link ClientFactory#onStop() onStop()}, which runs before the factory
  * stops.</li>
  * </ul>
@@ -95,7 +95,7 @@
  * <ul>
  * <li>{@link ExternalAPI#embed(String) embed(String)} lets you convert a text
  * string to an array of floats.</li>
- * <li>{@link ExternalAPI#complete(String...) complete(String...} lets you
+ * <li>{@link ExternalAPI#complete(String...) complete(String...)} lets you
  * generate text that is a fitting continuation of a sequence of messages.</li>
  * </ul>
  */
