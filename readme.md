@@ -72,7 +72,7 @@ Technology Commercialization at <otcinfo@uky.edu>.
 
 ## Version History
 
-- Version 1.0.0: First major release.
+- Version 1.0.0: First major release. Minor bug fixes.
 - Version 0.11.2: Small bug fixes and typo corrections.
 - Version 0.11.1: Small fixes to the external API to match other client
   libraries.
