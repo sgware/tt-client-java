@@ -725,7 +725,7 @@ public class ExternalAPI {
 			payload.put("max_completion_tokens", maxTokens);
 		ReasoningEffort reasoningEffort = getCompleteReasoningEffort();
 		if(reasoningEffort != null)
-			payload.put("reasoning_effort", reasoningEffort);
+			payload.put("reasoning_effort", reasoningEffort.name().toLowerCase());
 		payload.put("seed", COMPLETE_SEED);
 		Float temperature = getCompleteTemperature();
 		if(temperature != null)
