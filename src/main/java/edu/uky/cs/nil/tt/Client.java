@@ -188,14 +188,14 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	}
 	
 	private static final String getURL() {
-		String url = System.getenv(ENVIRONMENT_VARIABLE_API_KEY);
+		String url = System.getenv(ENVIRONMENT_VARIABLE_URL);
 		if(url == null)
 			url = DEFAULT_URL;
 		return url;
 	}
 	
 	private static final int getPort() {
-		String port = System.getenv(ENVIRONMENT_VARIABLE_API_KEY);
+		String port = System.getenv(ENVIRONMENT_VARIABLE_PORT);
 		if(port == null)
 			port = Integer.toString(DEFAULT_PORT);
 		return Integer.parseInt(port);
