@@ -27,8 +27,8 @@
  * 
  *     private final Random random = new Random();
  * 
- *     public RandomAgent(String url, int port) {
- *         super("random", null, null, null, url, port);
+ *     public RandomAgent() {
+ *         super("random", null, null);
  *     }
  * 	
  *     @Override
@@ -46,7 +46,7 @@
  * 
  *     @Override
  *     protected Client create() throws Exception {
- *         return new RandomAgent("localhost", 9005);
+ *         return new RandomAgent();
  *     }
  * 
  *     public static void main(String[] args) throws Exception {

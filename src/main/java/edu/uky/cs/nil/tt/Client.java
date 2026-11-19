@@ -59,10 +59,28 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	public static final String ENVIRONMENT_VARIABLE_API_KEY = "apikey";
 	
 	/**
+	 * The name of the environment variable where the client expects to find the
+	 * network URL to which it should connect, unless the URL is explicitly set
+	 * by the agent's constructor. If this environment variable is not set and
+	 * no URL is provided in the constructor, this agent will use {@link
+	 * #DEFAULT_URL}.
+	 */
+	public static final String ENVIRONMENT_VARIABLE_URL = "url";
+	
+	/**
 	 * The default URL the client will attempt to connect to if one is not
 	 * explicitly provided in the constructor
 	 */
 	public static final String DEFAULT_URL = "localhost";
+	
+	/**
+	 * The name of the environment variable where the client expects to find the
+	 * network port to which it should connect, unless the port is explicitly
+	 * set by the agent's constructor. If this environment variable is not set
+	 * and no port is provided in the constructor, this agent will use {@link
+	 * #DEFAULT_PORT}.
+	 */
+	public static final String ENVIRONMENT_VARIABLE_PORT = "port";
 	
 	/**
 	 * The default network port the client will attempt to connect to if one is
@@ -143,30 +161,10 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	}
 	
 	/**
-	 * Constructs a client with the given session preferences and network
-	 * details, reading the password and API key from the environment. The
-	 * client's password will be read from {@link
-	 * #ENVIRONMENT_VARIABLE_PASSWORD}. The client's API key will be read from
-	 * {@link #ENVIRONMENT_VARIABLE_API_KEY}.
-	 * 
-	 * @param name the name the client will use
-	 * @param world the name of the world the client wants their session to take
-	 * place in, or null if the client has no preference for a story world
-	 * @param role the role the client wants to play in the session, or null if
-	 * the client is willing to play either role
-	 * @param partner the name of the client's desired partner, or null if the
-	 * client is willing to play with any partner
-	 * @param url the URL of the server to which this client will connect
-	 * @param port the network port on which this client will connect
-	 */
-	public Client(String name, String world, Role role, String partner, String url, int port) {
-		this(name, System.getenv(ENVIRONMENT_VARIABLE_PASSWORD), world, role, partner, System.getenv(ENVIRONMENT_VARIABLE_API_KEY), url, port);
-	}
-	
-	/**
 	 * Constructs a client with the given session preferences, reading the
-	 * password and API key from the environment, and using the default network
-	 * settings.
+	 * password and API key from the environment, and reading the network URL
+	 * and port from the environment or using default values if they are not
+	 * provided.
 	 * 
 	 * @param name the name the client will use
 	 * @param world the name of the world the client wants their session to take
@@ -177,7 +175,30 @@ public abstract class Client implements Callable<String>, AutoCloseable {
 	 * client is willing to play with any partner
 	 */
 	public Client(String name, String world, Role role, String partner) {
-		this(name, world, role, partner, DEFAULT_URL, DEFAULT_PORT);
+		this(
+			name,
+			System.getenv(ENVIRONMENT_VARIABLE_PASSWORD),
+			world,
+			role,
+			partner,
+			System.getenv(ENVIRONMENT_VARIABLE_API_KEY),
+			getURL(),
+			getPort()
+		);
+	}
+	
+	private static final String getURL() {
+		String url = System.getenv(ENVIRONMENT_VARIABLE_API_KEY);
+		if(url == null)
+			url = DEFAULT_URL;
+		return url;
+	}
+	
+	private static final int getPort() {
+		String port = System.getenv(ENVIRONMENT_VARIABLE_API_KEY);
+		if(port == null)
+			port = Integer.toString(DEFAULT_PORT);
+		return Integer.parseInt(port);
 	}
 	
 	/**
